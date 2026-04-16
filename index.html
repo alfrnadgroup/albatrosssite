@@ -7,19 +7,32 @@
 <style>
 body {
     margin: 0;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     background: #0b1220;
     color: white;
 }
 
+/* HEADER WITH EXTRA LARGE LOGO */
 .header {
-    text-align: center;
-    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 32px;
     background: #111827;
-    font-size: 20px;
+}
+
+.header img {
+    height: 144px;      /* 🔥 DOUBLE SIZE */
+    width: auto;
+}
+
+.header span {
+    font-size: 28px;
     font-weight: bold;
 }
 
+/* LAYOUT */
 .container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -33,12 +46,18 @@ body {
     border-radius: 12px;
 }
 
+h3 {
+    margin-top: 0;
+}
+
+/* FORM ELEMENTS */
 input, button, textarea {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
     border-radius: 8px;
     border: none;
+    font-size: 14px;
 }
 
 button {
@@ -67,42 +86,61 @@ audio {
     width: 100%;
     margin-top: 10px;
 }
+
+/* MOBILE */
+@media (max-width: 800px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .header img {
+        height: 176px;   /* even larger on mobile */
+    }
+}
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
-🔊 Albatross Voice Codec Dashboard
+    <img src="logo.png" alt="Albatross Logo">
+    <span>🔊 Albatross Voice Codec Dashboard</span>
 </div>
 
+<!-- CONTENT -->
 <div class="container">
 
-<!-- ENCODE -->
-<div class="card">
-<h3>🎙 Encode Text → WAV</h3>
+    <!-- ENCODE -->
+    <div class="card">
+        <h3>🎙 Encode Text → WAV</h3>
 
-<input id="encode_text" placeholder="Enter text (e.g. Ahmed Alfahdi)">
-<input id="encode_key" placeholder="Key (optional)">
-<button onclick="encode()">Encode & Download</button>
+        <input id="encode_text" placeholder="Enter text (e.g. Ahmed Alfahdi)">
+        <input id="encode_key" placeholder="Key (optional)">
+        <button onclick="encode()">Encode & Download</button>
 
-<p class="status" id="encode_status"></p>
+        <p class="status" id="encode_status"></p>
 
-<audio id="audio_player" controls></audio>
-</div>
+        <audio id="audio_player" controls></audio>
+    </div>
 
-<!-- DECODE -->
-<div class="card">
-<h3>🔓 Decode WAV → Text</h3>
+    <!-- DECODE -->
+    <div class="card">
+        <h3>🔓 Decode WAV → Text</h3>
 
-<input type="file" id="file_input">
-<input id="decode_key" placeholder="Key (optional)">
-<button onclick="decode()">Decode File</button>
+        <input type="file" id="file_input" accept=".wav">
+        <input id="decode_key" placeholder="Key (optional)">
+        <button onclick="decode()">Decode File</button>
 
-<p class="status" id="decode_status"></p>
+        <p class="status" id="decode_status"></p>
 
-<textarea id="output" placeholder="Decoded text will appear here"></textarea>
-</div>
+        <textarea id="output" placeholder="Decoded text will appear here"></textarea>
+    </div>
 
 </div>
 
@@ -121,9 +159,7 @@ async function encode() {
     try {
         const res = await fetch(BASE_URL + "/encode", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 text: text,
                 key: key ? parseInt(key) : null
@@ -138,19 +174,16 @@ async function encode() {
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
 
-        // download
         const a = document.createElement("a");
         a.href = url;
         a.download = "output.wav";
         a.click();
 
-        // play
         document.getElementById("audio_player").src = url;
-
         document.getElementById("encode_status").innerText = "✅ Done";
 
     } catch (err) {
-        console.log(err);
+        console.error(err);
         document.getElementById("encode_status").innerText = "❌ Server error";
     }
 }
@@ -180,12 +213,11 @@ async function decode() {
         });
 
         const text = await res.text();
-
         document.getElementById("output").value = text;
         document.getElementById("decode_status").innerText = "✅ Done";
 
     } catch (err) {
-        console.log(err);
+        console.error(err);
         document.getElementById("decode_status").innerText = "❌ Server error";
     }
 }
