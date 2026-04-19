@@ -12,7 +12,6 @@ body {
     color: white;
 }
 
-/* HEADER WITH EXTRA LARGE LOGO */
 .header {
     display: flex;
     align-items: center;
@@ -23,8 +22,7 @@ body {
 }
 
 .header img {
-    height: 144px;      /* 🔥 DOUBLE SIZE */
-    width: auto;
+    height: 144px;
 }
 
 .header span {
@@ -32,7 +30,6 @@ body {
     font-weight: bold;
 }
 
-/* LAYOUT */
 .container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -46,18 +43,12 @@ body {
     border-radius: 12px;
 }
 
-h3 {
-    margin-top: 0;
-}
-
-/* FORM ELEMENTS */
 input, button, textarea {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
     border-radius: 8px;
     border: none;
-    font-size: 14px;
 }
 
 button {
@@ -73,7 +64,6 @@ button:hover {
 
 textarea {
     height: 120px;
-    resize: none;
 }
 
 .status {
@@ -86,61 +76,41 @@ audio {
     width: 100%;
     margin-top: 10px;
 }
-
-/* MOBILE */
-@media (max-width: 800px) {
-    .container {
-        grid-template-columns: 1fr;
-    }
-
-    .header {
-        flex-direction: column;
-        gap: 16px;
-    }
-
-    .header img {
-        height: 176px;   /* even larger on mobile */
-    }
-}
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
-    <img src="logo.png" alt="Albatross Logo">
+    <img src="logo.png">
     <span>🔊 Albatross Voice Codec Dashboard</span>
 </div>
 
-<!-- CONTENT -->
 <div class="container">
 
-    <!-- ENCODE -->
-    <div class="card">
-        <h3>🎙 Encode Text → WAV</h3>
+<!-- ENCODE -->
+<div class="card">
+    <h3>🎙 Encode Text → WAV</h3>
 
-        <input id="encode_text" placeholder="Enter text (e.g. Ahmed Alfahdi)">
-        <input id="encode_key" placeholder="Key (optional)">
-        <button onclick="encode()">Encode & Download</button>
+    <input id="encode_text" placeholder="Enter text">
+    <input id="encode_key" placeholder="Key (optional)">
+    <button onclick="encode()">Encode & Download</button>
 
-        <p class="status" id="encode_status"></p>
+    <p class="status" id="encode_status"></p>
+    <audio id="audio_player" controls></audio>
+</div>
 
-        <audio id="audio_player" controls></audio>
-    </div>
+<!-- DECODE -->
+<div class="card">
+    <h3>🔓 Decode WAV → Text</h3>
 
-    <!-- DECODE -->
-    <div class="card">
-        <h3>🔓 Decode WAV → Text</h3>
+    <input type="file" id="file_input" accept=".wav">
+    <input id="decode_key" placeholder="Key (optional)">
+    <button onclick="decode()">Decode File</button>
 
-        <input type="file" id="file_input" accept=".wav">
-        <input id="decode_key" placeholder="Key (optional)">
-        <button onclick="decode()">Decode File</button>
-
-        <p class="status" id="decode_status"></p>
-
-        <textarea id="output" placeholder="Decoded text will appear here"></textarea>
-    </div>
+    <p class="status" id="decode_status"></p>
+    <textarea id="output"></textarea>
+</div>
 
 </div>
 
@@ -159,7 +129,7 @@ async function encode() {
     try {
         const res = await fetch(BASE_URL + "/encode", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
                 text: text,
                 key: key ? parseInt(key) : null
@@ -167,12 +137,13 @@ async function encode() {
         });
 
         if (!res.ok) {
-            document.getElementById("encode_status").innerText = "❌ Encode failed";
+            const err = await res.text();
+            document.getElementById("encode_status").innerText = err;
             return;
         }
 
         const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
 
         const a = document.createElement("a");
         a.href = url;
@@ -187,6 +158,7 @@ async function encode() {
         document.getElementById("encode_status").innerText = "❌ Server error";
     }
 }
+
 
 /* =========================
    DECODE
@@ -212,8 +184,15 @@ async function decode() {
             body: formData
         });
 
-        const text = await res.text();
-        document.getElementById("output").value = text;
+        if (!res.ok) {
+            const err = await res.text();
+            document.getElementById("decode_status").innerText = err;
+            return;
+        }
+
+        const data = await res.json();
+        document.getElementById("output").value = data.decoded;
+
         document.getElementById("decode_status").innerText = "✅ Done";
 
     } catch (err) {
