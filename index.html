@@ -106,7 +106,7 @@ audio {
 <div class="card">
     <h3>🔓 Decode WAV → Text</h3>
 
-    <input type="file" id="file_input" accept=".wav">
+    <input type="file" id="file_input" accept=".wav,audio/wav">
     <input id="decode_key" placeholder="Key (optional)">
 
     <button onclick="decode()">Decode File</button>
@@ -166,7 +166,7 @@ async function encode() {
 
 
 /* =========================
-   DECODE
+   DECODE (FIXED SAFE UPLOAD)
 ========================= */
 async function decode() {
     const file = document.getElementById("file_input").files[0];
@@ -181,8 +181,10 @@ async function decode() {
 
     try {
         const formData = new FormData();
-        formData.append("file", file);
-        formData.append("key", key);
+
+        // 🔥 CRITICAL: preserve raw WAV binary
+        formData.append("file", file, file.name);
+        formData.append("key", key || "");
 
         const res = await fetch(BASE_URL + "/decode", {
             method: "POST",
