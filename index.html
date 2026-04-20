@@ -94,6 +94,8 @@ audio {
 
     <input id="encode_text" placeholder="Enter text">
     <input id="encode_key" placeholder="Key (optional)">
+    <input id="encode_filename" placeholder="Filename (e.g. voice.wav)">
+
     <button onclick="encode()">Encode & Download</button>
 
     <p class="status" id="encode_status"></p>
@@ -106,6 +108,7 @@ audio {
 
     <input type="file" id="file_input" accept=".wav">
     <input id="decode_key" placeholder="Key (optional)">
+
     <button onclick="decode()">Decode File</button>
 
     <p class="status" id="decode_status"></p>
@@ -123,6 +126,7 @@ const BASE_URL = "https://albatrossvoice.onrender.com";
 async function encode() {
     const text = document.getElementById("encode_text").value;
     const key = document.getElementById("encode_key").value;
+    const filename = document.getElementById("encode_filename").value || "output.wav";
 
     document.getElementById("encode_status").innerText = "Encoding...";
 
@@ -132,7 +136,8 @@ async function encode() {
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
                 text: text,
-                key: key ? parseInt(key) : null
+                key: key ? parseInt(key) : null,
+                filename: filename
             })
         });
 
@@ -147,7 +152,7 @@ async function encode() {
 
         const a = document.createElement("a");
         a.href = url;
-        a.download = "output.wav";
+        a.download = filename;
         a.click();
 
         document.getElementById("audio_player").src = url;
